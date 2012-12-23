@@ -203,6 +203,8 @@ say 2, "Using Tarball path [$tarballs]";
 chdir($projects) or fatal "Cannot change to projects root directory '$projects'";
 fatal "Cannot find tarball root directory '$tarballs'" unless -d $tarballs;
 
+$list = 1 unless (@ARGV); # Default to list mode if nothing else is requested
+
 if ($list) {
 	my $count_active = 0;
 	my $count_tarballs = 0;
