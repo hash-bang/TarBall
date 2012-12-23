@@ -1,0 +1,187 @@
+#!/usr/bin/perl
+# POD {{{
+=head1 NAME
+
+tb - Manage projects by throwing them into and out of Tarballs
+
+=head1 SYNOPSIS
+
+	tb [options] <projects> 
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--dryrun>
+
+=item B<-n>
+
+Do not actually run any system commands. Just output what WOULD run.
+
+=item B<--delete>
+
+=item B<-d>
+
+Delete a project from the active folder after tarballing.
+
+=item B<--force>
+
+=item B<-f>
+
+Force a recovery action to overrite any existing files if any are found.
+
+=item B<--recover>
+
+=item B<--reverse>
+
+=item B<-r>
+
+Reverse the backup process so the backup is restored over the active version.
+If an active version of a project already exists this function will not continue unless force (-f) is specified.
+
+=item B<-v>
+
+=item B<--verbose>
+
+Be more verbose when outputting information to STDERR.
+Specify multiple times to increase verbosity.
+
+=back
+
+=head1 DESCRIPTION
+
+A command line tool for the manipulation of projects.
+
+=head1 EXAMPLES
+
+=over
+
+=item B<tb foo>
+
+Tarball the project 'foo' to backup.
+
+=item B<tb -d foo>
+
+Tarball the project 'foo' to backup and delete the original active folder afterwards.
+
+=back
+
+=head1 BUGS
+
+Quite probably.
+
+Please report to the author when found.
+
+=head1 AUTHOR
+
+Matt Carter <m@ttcarter.com>
+
+=cut
+# }}} POD
+
+package tb;
+our $VERSION = '0.1.0';
+
+# Header {{{
+use IO::Handle;
+use Getopt::Long;
+use Text::Glob qw/match_glob glob_to_regex/;
+Getopt::Long::Configure('bundling', 'ignorecase_always', 'pass_through');
+STDERR->autoflush(1); # } Flush the output DIRECTLY to the output buffer without caching
+STDOUT->autoflush(1); # }
+
+use Data::Dump; # FIXME: Debugging modules
+# }}} Header
+
+# Functions {{{
+# Flow control {{{
+sub fatal {
+	# Print an error message and fatally die
+	print STDERR @_, "\n";
+	exit 1;
+}
+
+sub say {
+	# Print a message to STDERR based on the verbosity level
+	our $verbose;
+	my $verbosity = shift;
+	print STDERR @_, "\n" if ($verbose >= $verbosity);
+}
+
+sub pause {
+	# Wait a number of seconds (specified by the -w [seconds]) between VM operations
+	# This function purposely ignores the first vm (thus not bothering to wait for the last vm to finish)
+	our $wait;
+	if ($wait > 0) {
+		say(0, "Waiting $wait seconds...");
+		sleep($wait);
+	}
+}
+
+sub error {
+	my $action = shift;
+	my $subject = shift;
+	if (ref($@) eq 'SoapFault') {
+		say(0, "ERROR: " . $@->detail);
+	} else {
+		say(0, "ERROR: General fault!");
+	}
+	fatal("Stopping execution. Use -f to force continue.") unless $force;
+}
+# }}} Flow control
+
+sub run {
+	our $dryrun;
+	my $cmd = shift;
+	if ($dryrun) {
+		say 0, "Would run command: [$cmd]";
+		return 1;
+	} else {
+		$return = system $cmd;
+		return $return == 0 ? true : false;
+	}
+}
+
+# }}} Functions
+
+# Command line options loading {{{
+my $projects = "/home/mc/Papers/Projects";
+my $tarballs = "/home/mc/Papers/Tarballs";
+
+my $delete, $recover;
+our $dryrun;
+our $verbose = 0;
+GetOptions(
+	'dryrun|n' => \$dryrun,
+	'verbose|v+' => \$verbose,
+	'delete|d' => \$delete,
+	'recover|reverse|r' => \$recover,
+	'force|f' => \$force,
+);
+# }}} Command line options loading
+
+chdir($projects);
+
+for my $project (@ARGV) {
+	$project =~ s/\/$//; # Chop off backslash if any
+	my $tarball = "$tarballs/$project.tar.bz2";
+	say 1, "Operating on project '$project'";
+
+	if ($recover) {
+		fatal "Tarball '$tarball' not found when trying to recover project '$project'. Aborting" unless (-f $tarball);
+		if (-d $project) { # Project folder exists
+			if ($force) { # Permission to nuke it?
+				run "rm -rf '$project'" or fatal "Cannot remove existing project folder '$project' to restore Tarball";
+			} else {
+				fatal "Project '$project' already exists when recovering project from Tarball. Use '-f' to force deletion of existing project.";
+			}
+		}
+		run "mkdir '$project'" or fatal "Failed to create directory when recovering project '$project'";
+		run "tar xvfj $tarball" or fatal "Failed to extract from Tarball when recovering project '$project'";
+	} else { # Do a normal push to tarball
+		fatal "Project '$project' not found. Aborting" unless (-d $project);
+		run "rm '$tarball'" or fatal "Failed to remove existing tarball - '$tarball'" if (-f $tarball);
+		run "tar cvfj $tarball $project" or fatal "Failed to tarball project '$project'";
+		run "rm -rf $project" or fatal "Failed to erased project tree for project '$project'" if $delete;
+	}
+}
