@@ -1,7 +1,5 @@
 VERSION := $(shell perl -MExtUtils::MakeMaker -le 'print MM->parse_version(shift)' tb)
 
-.PHONY: README.md
-
 all: README.md
 
 README.md: tb
