@@ -85,7 +85,6 @@ our $VERSION = '0.1.0';
 # Header {{{
 use IO::Handle;
 use Getopt::Long;
-use Text::Glob qw/match_glob glob_to_regex/;
 Getopt::Long::Configure('bundling', 'ignorecase_always', 'pass_through');
 STDERR->autoflush(1); # } Flush the output DIRECTLY to the output buffer without caching
 STDOUT->autoflush(1); # }
