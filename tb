@@ -185,26 +185,36 @@ chdir($projects) or fatal "Cannot change to projects root directory '$projects'"
 fatal "Cannot find tarball root directory '$tarballs'" unless -d $tarballs;
 
 if ($list) {
-	say 0, "-- Active projects --";
-	for my $project (<*>) {
-		if (-f "$tarballs/$project.tar.bz2") { # Has tarball
-			say 0, "$project [TARBALL]";
-		} else { # No tarball
-			say 0, $project;
+	my $count_active = 0;
+	my $count_tarballs = 0;
+	my $count_both = 0;
+	my $last;
+	for my $project (sort map { s!^(.*)/(.*?)(\.tar\.bz2)?$!\2!; $_ } (glob("$projects/*"), glob("$tarballs/*.bz2"))) { # Return all files in both folders, clip out the directory + suffix, sort
+		next if $project eq $last;
+		$last = $project;
+		my $hasall = 0;
+		$out = '';
+		if (-d "$projects/$project") {
+			$out .=  '[A]';
+			$count_active++;
+			$hasall = 1;
+		} else {
+			$out .= '   ';
 		}
+		$out .= ' ';
+		if (-f "$tarballs/$project.tar.bz2") {
+			$out .= '[T]';
+			$count_tarballs++;
+			$count_both++ if $hasall = 1;
+		} else {
+			$out .= '   ';
+		}
+		$out .= " $project";
+		say 0, $out;
 	}
 
-	say 0, "";
-	say 0, "-- Tarballed projects --";
-	chdir($tarballs);
-	for my $tarball (<*.tar.bz2>) {
-		($project) = ($tarball =~ /(.*)\.tar\.bz2$/);
-		if (-f "$projects/$project") { # Has project
-			say 0, "$project [ACTIVE]";
-		} else { # No tarball
-			say 0, $project;
-		}
-	}
+	say;
+	say 0, "[A]ctive = $count_active, [T]arballs = $count_tarballs, Both = $count_both";
 	exit;
 }
 
