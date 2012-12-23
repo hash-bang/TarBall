@@ -144,11 +144,12 @@ sub run {
 # }}} Functions
 
 # Command line options loading {{{
-my $delete, $recover;
+my $delete, $recover, $list;
 my $path_projects, $path_tarballs;
 our $dryrun;
 our $verbose = 0;
 GetOptions(
+	'list|l' => \$list,
 	'dryrun|n' => \$dryrun,
 	'verbose|v+' => \$verbose,
 	'delete|d' => \$delete,
@@ -182,6 +183,30 @@ say 2, "Using Tarball path [$tarballs]";
 
 chdir($projects) or fatal "Cannot change to projects root directory '$projects'";
 fatal "Cannot find tarball root directory '$tarballs'" unless -d $tarballs;
+
+if ($list) {
+	say 0, "-- Active projects --";
+	for my $project (<*>) {
+		if (-f "$tarballs/$project.tar.bz2") { # Has tarball
+			say 0, "$project [TARBALL]";
+		} else { # No tarball
+			say 0, $project;
+		}
+	}
+
+	say 0, "";
+	say 0, "-- Tarballed projects --";
+	chdir($tarballs);
+	for my $tarball (<*.tar.bz2>) {
+		($project) = ($tarball =~ /(.*)\.tar\.bz2$/);
+		if (-f "$projects/$project") { # Has project
+			say 0, "$project [ACTIVE]";
+		} else { # No tarball
+			say 0, $project;
+		}
+	}
+	exit;
+}
 
 for my $project (@ARGV) {
 	$project =~ s/\/$//; # Chop off backslash if any
