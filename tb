@@ -145,10 +145,8 @@ sub run {
 # }}} Functions
 
 # Command line options loading {{{
-my $projects = "/home/mc/Papers/Projects";
-my $tarballs = "/home/mc/Papers/Tarballs";
-
 my $delete, $recover;
+my $path_projects, $path_tarballs;
 our $dryrun;
 our $verbose = 0;
 GetOptions(
@@ -157,7 +155,30 @@ GetOptions(
 	'delete|d' => \$delete,
 	'recover|reverse|r' => \$recover,
 	'force|f' => \$force,
+	'path-projects=s' => \$path_projects,
+	'path-tarballs=s' => \$path_tarballs,
 );
+
+my $projects;
+my $tarballs;
+if ($path_projects) {
+	$projects = $path_projects;
+} elsif ($ENV{TBPROJECTS}) {
+	$projects = $ENV{TBPROJECTS};
+} else {
+	fatal "No project path specified. Use either --path-projects or set the environment variable TBPROJECTS";
+}
+
+if ($path_tarballs) {
+	$tarballs = $path_tarballs;
+} elsif ($ENV{TBTARBALLS}) {
+	$tarballs = $ENV{TBTARBALLS};
+} else {
+	fatal "No tarball path specified. Use either --path-tarballs or set the environment variable TBTARBALLS";
+}
+
+say 2, "Using Projects path [$projects]";
+say 2, "Using Tarball path [$tarballs]";
 # }}} Command line options loading
 
 chdir($projects);
