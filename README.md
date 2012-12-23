@@ -24,6 +24,9 @@ OPTIONS
     --delete
     -d      Delete a project from the active folder after tarballing.
 
+    --list
+    -l      List all known active projects and tarballs.
+
     --force
     -f      Force a recovery action to overrite any existing files if any
             are found.
