@@ -24,6 +24,12 @@ Do not actually run any system commands. Just output what WOULD run.
 
 Delete a project from the active folder after tarballing.
 
+=item B<--list>
+
+=item B<-l>
+
+List all known active projects and tarballs.
+
 =item B<--force>
 
 =item B<-f>
@@ -63,6 +69,19 @@ Tarball the project 'foo' to backup.
 =item B<tb -d foo>
 
 Tarball the project 'foo' to backup and delete the original active folder afterwards.
+
+=item B<tb -r foo>
+
+Recover the tarballed project 'foo' from backup into an active project folder.
+If 'foo' already exists it will NOT be overwritten.
+
+=item B<tb -rf foo>
+
+Same as above but this time if 'foo' does exist it will be removed before the restore takes place.
+
+=item B<tb -l>
+
+List all known projects (both tarballs and active)
 
 =back
 
