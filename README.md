@@ -53,6 +53,17 @@ EXAMPLES
         Tarball the project 'foo' to backup and delete the original active
         folder afterwards.
 
+    tb -r foo
+        Recover the tarballed project 'foo' from backup into an active
+        project folder. If 'foo' already exists it will NOT be overwritten.
+
+    tb -rf foo
+        Same as above but this time if 'foo' does exist it will be removed
+        before the restore takes place.
+
+    tb -l
+        List all known projects (both tarballs and active)
+
 BUGS
     Quite probably.
 
