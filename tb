@@ -181,7 +181,8 @@ say 2, "Using Projects path [$projects]";
 say 2, "Using Tarball path [$tarballs]";
 # }}} Command line options loading
 
-chdir($projects);
+chdir($projects) or fatal "Cannot change to projects root directory '$projects'";
+fatal "Cannot find tarball root directory '$tarballs'" unless -d $tarballs;
 
 for my $project (@ARGV) {
 	$project =~ s/\/$//; # Chop off backslash if any
