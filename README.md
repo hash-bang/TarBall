@@ -7,6 +7,12 @@ Its based around the idea that you have two folders:
 
 This script manages the backup from active -> archive and vise-versa.
 
+Installation
+============
+If you are using a Debian based system such as Ubuntu or mint simply open the .deb file found in the root folder.
+
+If you are using another kind of system copy the `tb` script into /usr/bin (or wherever).
+
 
 Command line reference
 ======================
