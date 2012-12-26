@@ -13,6 +13,10 @@ If you are using a Debian based system such as Ubuntu or mint simply open the .d
 
 If you are using another kind of system copy the `tb` script into /usr/bin (or wherever).
 
+Alternatively run the following from a Debian based system:
+
+	URL='https://github.com/hash-bang/Script-Tarball/blob/master/tb_0.1.0.deb?raw=true'; FILE=`mktemp`; wget "$URL" -qO $FILE && sudo dpkg -i $FILE; rm $FILE
+
 
 Command line reference
 ======================
