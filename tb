@@ -24,6 +24,12 @@ Do not actually run any system commands. Just output what WOULD run.
 
 Delete a project from the active folder after tarballing.
 
+=item B<--info>
+
+=item B<-i>
+
+Show information about projects.
+
 =item B<--list>
 
 =item B<-l>
@@ -34,7 +40,8 @@ List all known active projects and tarballs.
 
 =item B<-f>
 
-Force a recovery action to overrite any existing files if any are found.
+If specified during normal operation this option forces a tarball to be created even if the tarball is the same age as the most recent file.
+If specified during a recovery action, any existing files are overritten during the recovery.
 
 =item B<--recover>
 
@@ -65,6 +72,7 @@ A command line tool for the manipulation of projects.
 =item B<tb foo>
 
 Tarball the project 'foo' to backup.
+If the tarball already exists and is up to date the project will be skipped (to override this behaviour use '-f').
 
 =item B<tb -d foo>
 
@@ -104,6 +112,7 @@ our $VERSION = '0.1.0';
 # Header {{{
 use IO::Handle;
 use Getopt::Long;
+use POSIX qw/strftime/;
 Getopt::Long::Configure('bundling', 'ignorecase_always', 'pass_through');
 STDERR->autoflush(1); # } Flush the output DIRECTLY to the output buffer without caching
 STDOUT->autoflush(1); # }
@@ -160,15 +169,42 @@ sub run {
 	}
 }
 
+sub getrecent {
+	my $dir = shift;
+	my $recent = undef;
+	say 2, "Scan dir '$_'";
+	for (glob("$dir/*")) {
+		my $mtime;
+		if (-d) {
+			$mtime = getrecent($_);
+		} elsif (-f) {
+			my @stat = stat($_);
+			$mtime = $stat[9];
+		}
+		$recent = $mtime if $mtime && ($mtime > $recent || !$recent);
+		say 2, "Examine file '$_' Age = $mtime";
+	}
+	$recent;
+}
+
+sub gettbage {
+	my $tarball = shift;
+	if (-f $tarball) {
+		my @stat = stat($tarball);
+		$stat[9];
+	}
+}
+
 # }}} Functions
 
 # Command line options loading {{{
-my $delete, $recover, $list;
+my $delete, $recover, $list, $info;
 my $path_projects, $path_tarballs;
 our $dryrun;
 our $verbose = 0;
 GetOptions(
 	'list|l' => \$list,
+	'info|i' => \$info,
 	'dryrun|n' => \$dryrun,
 	'verbose|v+' => \$verbose,
 	'delete|d' => \$delete,
@@ -259,8 +295,27 @@ for my $project (@ARGV) {
 		run "mkdir '$project'" or fatal "Failed to create directory when recovering project '$project'";
 		run "tar xvfj $tarball" or fatal "Failed to extract from Tarball when recovering project '$project'";
 		# }}}
+	} elsif ($info) {
+		# Display information on project {{{
+		my $youngest = getrecent($project);
+		my $tbage = gettbage("$tarballs/$project.tar.bz2");
+		say 0, "Project: '$project'";
+		say 0, "Most recent file: $youngest / " . strftime('%d-%m-%Y %H:%M:%S', localtime $youngest);
+		say 0, "Tarball age: $tbage / " . strftime('%d-%m-%Y %H:%M:%S', localtime $tbage);
+		say 0, "Would update: " . ($tbage < $youngest ? 'Yes' : 'No');
+		say;
+		# }}}
 	} else {
 		# Normal Tarball backup functionality {{{
+		unless ($force) { # If forced just nuke the archive and re-created - if not try to figure out the newest file
+			my $youngest = getrecent($project);
+			my $tbage = gettbage("$tarballs/$project.tar.bz2");
+			if ($tbage >= $youngest) {
+				say 0, "Skipped '$project'";
+				next;
+			}
+		}
+
 		fatal "Project '$project' not found. Aborting" unless (-d $project);
 		run "rm '$tarball'" or fatal "Failed to remove existing tarball - '$tarball'" if (-f $tarball);
 		run "tar cvfj $tarball $project" or fatal "Failed to tarball project '$project'";
