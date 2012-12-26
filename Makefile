@@ -20,6 +20,7 @@ version:
 
 clean:
 	-rm -r $(DEBFACTORY)
+	-rm *.deb
 
 deb: clean
 	mkdir $(DEBFACTORY)
