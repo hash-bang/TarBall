@@ -19,10 +19,11 @@ version:
 	@echo "Version $(VERSION)"
 
 clean:
-	-rm -r $(DEBFACTORY)
 	-rm *.deb
+	-rm -r $(DEBFACTORY)
 
-deb: clean
+deb:
+	-rm *.deb
 	mkdir $(DEBFACTORY)
 	mkdir -p $(DEBFACTORY)/usr/bin $(DEBFACTORY)/usr/share/man $(DEBFACTORY)/usr/share/doc/$(SCRIPT)
 	cp -a $(SCRIPT) $(DEBFACTORY)/usr/bin
@@ -31,4 +32,4 @@ deb: clean
 	pod2man $(SCRIPT) $(DEBFACTORY)/usr/share/man/$(SCRIPT).1
 	gzip -f $(DEBFACTORY)/usr/share/man/$(SCRIPT).1
 	dpkg -b $(DEBFACTORY) $(SCRIPT)_$(VERSION).deb
-	make clean
+	-rm -r $(DEBFACTORY)
