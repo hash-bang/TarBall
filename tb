@@ -300,8 +300,8 @@ for my $project (@ARGV) {
 		my $youngest = getrecent($project);
 		my $tbage = gettbage("$tarballs/$project.tar.bz2");
 		say 0, "Project: '$project'";
-		say 0, "Most recent file: $youngest / " . strftime('%d-%m-%Y %H:%M:%S', localtime $youngest);
-		say 0, "Tarball age: $tbage / " . strftime('%d-%m-%Y %H:%M:%S', localtime $tbage);
+		say 0, "Most recent file: " . (-d $project ? "$youngest / " . strftime('%d-%m-%Y %H:%M:%S', localtime $youngest) : 'No active project');
+		say 0, "Tarball age: " . (-f "$tarballs/$project.tar.bz2" ? "$tbage / " . strftime('%d-%m-%Y %H:%M:%S', localtime $tbage) : 'No tarball');
 		say 0, "Would update: " . ($tbage < $youngest ? 'Yes' : 'No');
 		say;
 		# }}}
