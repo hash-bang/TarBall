@@ -1,0 +1,10 @@
+Package: tb
+Source: tb
+Version: $VERSION
+Architecture: all
+Maintainer: Matt Carter <m@ttcarter.com>
+Depends: perl (>= 5.10.0)
+Section: utils
+Priority: optional
+Homepage: https://github.com/hash-bang/Script-Tarball
+Description: Simple script to manage projects that live in Tarballs
