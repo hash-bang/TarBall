@@ -31,5 +31,4 @@ deb: clean
 	pod2man $(SCRIPT) $(DEBFACTORY)/usr/share/man/$(SCRIPT).1
 	gzip -f $(DEBFACTORY)/usr/share/man/$(SCRIPT).1
 	dpkg -b $(DEBFACTORY) $(SCRIPT)_$(VERSION).deb
-	mv $(SCRIPT)_$(VERSION).deb .
 	make clean
