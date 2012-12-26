@@ -7,7 +7,7 @@ DEBFACTORY := Distro/Deb
 install: deb
 	dpkg -i Distro/$(SCRIPT)_$(VERSION).deb
 
-all: README.md
+all: README.md deb
 
 README.md: $(SCRIPT)
 	pod2text $(SCRIPT) | perl -e '$$_=join("",<>); s/(.*```).*(```.*)/"$$1\n" . join("", <STDIN>) . $$2/es; print;' README.md >README.md.tmp

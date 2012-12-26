@@ -35,12 +35,17 @@ OPTIONS
     --delete
     -d      Delete a project from the active folder after tarballing.
 
+    --info
+    -i      Show information about projects.
+
     --list
     -l      List all known active projects and tarballs.
 
     --force
-    -f      Force a recovery action to overrite any existing files if any
-            are found.
+    -f      If specified during normal operation this option forces a
+            tarball to be created even if the tarball is the same age as the
+            most recent file. If specified during a recovery action, any
+            existing files are overritten during the recovery.
 
     --recover
     --reverse
@@ -58,7 +63,9 @@ DESCRIPTION
 
 EXAMPLES
     tb foo
-        Tarball the project 'foo' to backup.
+        Tarball the project 'foo' to backup. If the tarball already exists
+        and is up to date the project will be skipped (to override this
+        behaviour use '-f').
 
     tb -d foo
         Tarball the project 'foo' to backup and delete the original active
