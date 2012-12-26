@@ -5,7 +5,7 @@ VERSION := $(shell perl -MExtUtils::MakeMaker -le 'print MM->parse_version(shift
 DEBFACTORY := Distro/Deb
 
 install: deb
-	dpkg -i Distro/$(SCRIPT)_$(VERSION).deb
+	dpkg -i $(SCRIPT)_$(VERSION).deb
 
 all: README.md deb
 
