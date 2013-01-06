@@ -47,6 +47,26 @@ OPTIONS
             most recent file. If specified during a recovery action, any
             existing files are overritten during the recovery.
 
+    --meld
+    --merge
+    -m      Extract the tarball a temporary directory (see --path-temp) then
+            run 'meld' over the temporary and active project directories to
+            highlight the differences.
+
+    --path-projects
+            Set the root directory of extractd projects. The environment
+            variable TBPROJECTS can also be set to automatically specify
+            this item.
+
+    --path-tarballs
+            Set the root directory of tarballs. The environment variable
+            TBTARBALLS can also be set to automatically specify this item.
+
+    --path-temp
+            Set the root directory for temporary files using when melding
+            (see --meld). The environment variable TBTEMP can also be set to
+            automatically specify this item.
+
     --recover
     --reverse
     -r      Reverse the backup process so the backup is restored over the
