@@ -43,6 +43,26 @@ List all known active projects and tarballs.
 If specified during normal operation this option forces a tarball to be created even if the tarball is the same age as the most recent file.
 If specified during a recovery action, any existing files are overritten during the recovery.
 
+=item B<--meld>
+
+=item B<--merge>
+
+=item B<-m>
+
+Extract the tarball a temporary directory (see --path-temp) then run 'meld' over the temporary and active project directories to highlight the differences.
+
+=item B<--path-projects>
+
+Set the root directory of extractd projects. The environment variable TBPROJECTS can also be set to automatically specify this item.
+
+=item B<--path-tarballs>
+
+Set the root directory of tarballs. The environment variable TBTARBALLS can also be set to automatically specify this item.
+
+=item B<--path-temp>
+
+Set the root directory for temporary files using when melding (see --meld). The environment variable TBTEMP can also be set to automatically specify this item.
+
 =item B<--recover>
 
 =item B<--reverse>
@@ -198,12 +218,13 @@ sub gettbage {
 # }}} Functions
 
 # Command line options loading {{{
-my $delete, $recover, $list, $info;
-my $path_projects, $path_tarballs;
+my $delete, $recover, $list, $info, $meld;
+my $path_projects, $path_tarballs, $path_temp;
 our $dryrun;
 our $verbose = 0;
 GetOptions(
 	'list|l' => \$list,
+	'meld|merge|m' => \$meld,
 	'info|i' => \$info,
 	'dryrun|n' => \$dryrun,
 	'verbose|v+' => \$verbose,
@@ -212,10 +233,10 @@ GetOptions(
 	'force|f' => \$force,
 	'path-projects=s' => \$path_projects,
 	'path-tarballs=s' => \$path_tarballs,
+	'path-temp=s' => \$path_temp,
 );
 
-my $projects;
-my $tarballs;
+my $projects, $tarballs, $temp;
 if ($path_projects) {
 	$projects = $path_projects;
 } elsif ($ENV{TBPROJECTS}) {
@@ -230,6 +251,14 @@ if ($path_tarballs) {
 	$tarballs = $ENV{TBTARBALLS};
 } else {
 	fatal "No tarball path specified. Use either --path-tarballs or set the environment variable TBTARBALLS";
+}
+
+if ($meld and $path_temp) {
+	$temp = $path_temp;
+} elsif ($ENV{TBTEMP}) {
+	$temp = $ENV{TBTEMP};
+} else {
+	fatal "Cannot use --meld without also specifying a temporary directory. Use either --path-temp or set the environment variable TBTEMP with a temporary root directory";
 }
 
 say 2, "Using Projects path [$projects]";
@@ -304,6 +333,17 @@ for my $project (@ARGV) {
 		say 0, "Tarball age: " . (-f "$tarballs/$project.tar.bz2" ? "$tbage / " . strftime('%d-%m-%Y %H:%M:%S', localtime $tbage) : 'No tarball');
 		say 0, "Would update: " . ($tbage < $youngest ? 'Yes' : 'No');
 		say;
+		# }}}
+	} elsif ($meld) {
+		say 0, "Melding '$project'...";
+		# Meld the tarball and project {{{
+		fatal "Tarball '$tarball' not found when trying to meld project '$project'. Aborting" unless (-f $tarball);
+		chdir($temp);
+		run "tar xvfj $tarball" or fatal "Failed to extract from Tarball when melding project '$project'";
+		run "mv '$project' 'TEMP-$project'" or fatal "Failed moving temporary directory when melding project '$project'";
+		chdir($projects);
+		run "meld '$project' '$temp/TEMP-$project'" or fatal "Failed running meld on project '$project'";
+		run "rm -rf '$temp/TEMP-$project'" or fatal "Failed erasing temporary files during meld on project '$project'";
 		# }}}
 	} else {
 		# Normal Tarball backup functionality {{{
