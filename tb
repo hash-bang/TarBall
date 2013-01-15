@@ -266,7 +266,7 @@ say 2, "Using Tarball path [$tarballs]";
 # }}} Command line options loading
 
 chdir($projects) or fatal "Cannot change to projects root directory '$projects'";
-fatal "Cannot find tarball root directory '$tarballs'" unless -d $tarballs;
+fatal "Cannot find tarball root directory '$tarballs'" unless -d $tarballs or -l $tarballs;
 
 $list = 1 unless (@ARGV); # Default to list mode if nothing else is requested
 
@@ -337,7 +337,7 @@ for my $project (@ARGV) {
 	} elsif ($meld) {
 		say 0, "Melding '$project'...";
 		# Meld the tarball and project {{{
-		fatal "Tarball '$tarball' not found when trying to meld project '$project'. Aborting" unless (-f $tarball);
+		fatal "Tarball '$tarball' not found when trying to meld project '$project'. Aborting" unless -f $tarball;
 		chdir($temp);
 		run "tar xvfj $tarball" or fatal "Failed to extract from Tarball when melding project '$project'";
 		run "mv '$project' 'TEMP-$project'" or fatal "Failed moving temporary directory when melding project '$project'";
